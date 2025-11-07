@@ -4,6 +4,10 @@
 >
 > Any work being done in those settings should use something like NGINX or Apache Server
 
+## Downloads
+Linux: [minserve-v1](./minserve) (didnt try on any distro except nixos, if it doesnt work then just build it)
+Windows: [minserve-v1](./minserve.exe)
+
 ## Usage
 MinServe takes in two arguments,
 - Port number
