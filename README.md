@@ -5,8 +5,7 @@
 > Any work being done in those settings should use something like NGINX or Apache Server
 
 ## Downloads
-Linux: [minserve-v1](./minserve) (didnt try on any distro except nixos, if it doesnt work then just build it)
-Windows: [minserve-v1](./minserve.exe)
+The linux and windows binaries can be found on the [releases page](https://github.com/CyberReaper00/minserve/releases/tag/First)
 
 ## Usage
 MinServe takes in two arguments,
