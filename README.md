@@ -3,11 +3,11 @@
 > MinServe is created for the purpose of testing and fast development, it is not meant to be used for production or secure environments but for testing, prototyping and hobby projects
 >
 > Any work being done in those settings should use something like NGINX or Apache Server
-
+---
 MinServe is a simple but powerful web server that can be used for the hosting of static pages in a simple and straight-forward manner
 
 ## Getting Started
-If you wish to try minserve then you can just do the following to build it on your system or go to the [releases page](https://github.com/CyberReaper00/minserve/releases/tag/v0.1) to download a binary
+If you wish to try minserve then you can just do the following to build it on your system or go to the [releases page](https://github.com/CyberReaper00/minserve/releases) to download a binary
 
 MinServe is built to be as simple and efficient as possible, due to this simplicity it does not require any `build.sh`, `build.bat`, `run.sh` or anything alike
 
@@ -80,6 +80,7 @@ If any filenames are given then minserve will accept the first name to be the ho
     ```
 
     This secional syntax can be stacked and an arbitrary amount of sections of the site can be provided to minserve for immediate traversal
+
     But it must be kept in mind that the first file argument given will always be the homepage
 
 ## Not Supported
