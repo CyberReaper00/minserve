@@ -4,6 +4,7 @@
 >
 > Any work being done in those settings should use something like NGINX or Apache Server
 
+<<<<<<< HEAD
 MinServe is a simple but powerful web server that can be used for the hosting of static pages in a simple and straight-forward manner
 
 ## Getting Started
@@ -43,6 +44,10 @@ All go binaries on windows and macos are as statically linked by default as they
 ```bash
 go build -o minserve .
 ```
+=======
+## Downloads
+The linux and windows binaries can be found on the [releases page](https://github.com/CyberReaper00/minserve/releases/tag/First)
+>>>>>>> e15ab21c4334a1939b31bee7b8c43cb44dd675aa
 
 ## Usage
 MinServe takes in two arguments,
