@@ -4,8 +4,45 @@
 >
 > Any work being done in those settings should use something like NGINX or Apache Server
 
-## Downloads
-The linux and windows binaries can be found on the [releases page](https://github.com/CyberReaper00/minserve/releases/tag/First)
+MinServe is a simple but powerful web server that can be used for the hosting of static pages in a simple and straight-forward manner
+
+## Getting Started
+If you wish to try minserve then you can just do the following to build it on your system or go to the [releases page](https://github.com/CyberReaper00/minserve/releases/tag/v0.1) to download a binary
+
+MinServe is built to be as simple and efficient as possible, due to this simplicity it does not require any `build.sh`, `build.bat`, `run.sh` or anything alike
+
+**Prerequisites**
+- Download the main `server.go` file
+- Download the Go programming language
+- Setup the main environment by doing the following
+
+```
+mkdir minserve_proj && cd minserve_proj
+go mod init
+go get https://github.com/CyberReaper00/helper_utils/humain@latest // this is the main dependency
+go mod tidy
+```
+
+**Building**
+- Once everything has been set up, run the following command for your OS
+
+### Linux
+**Dynamic linking:**
+```bash
+go build -o minserve .
+```
+
+**Static linking:**
+```bash
+CGO_ENABLED=0
+go build -o minserve .
+```
+
+### Windows or MacOS
+All go binaries on windows and macos are as statically linked by default as they allow them to be, there really isnt anything else to be done
+```bash
+go build -o minserve .
+```
 
 ## Usage
 MinServe takes in two arguments,

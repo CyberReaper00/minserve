@@ -1,3 +1,25 @@
+/*
+MinServe is a simple but powerful web server that can be used for the
+hosting of static pages in a simple and straight-forward manner
+
+Copyright (C) 2025 Nahyan ul haq Siddiqui
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Contact at <simple.nahyan@gmail.com>
+*/
+
 package main
 
 import (
@@ -16,27 +38,11 @@ str	"strings"
 hu	"local/main/humain"
 )
 
-func Load_Page(filename, target string) {
+var horz_top = str.Repeat("━", 47)
+var horz_mid = str.Repeat("━", 70)
+var horz_bot = str.Repeat("━", 81)
 
-	http.HandleFunc(target, func(writer http.ResponseWriter, requestor *http.Request) {
-		content, read_err := os.ReadFile(filename)
-
-		if read_err != nil {
-			http.Error(writer, "Could not read file: ", http.StatusInternalServerError)
-			return
-		}
-
-		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
-		writer.Write(content)
-	})
-}
-
-func main() {
-	horz_top := str.Repeat("━", 47)
-	horz_mid := str.Repeat("━", 70)
-	horz_bot := str.Repeat("━", 81)
-
-	flag.Usage = func() {
+func usage() {
 		fmt.Println("" +
 		"┏━━━━━ usage: <port> [<filenames>] " + horz_top + "┓" +
 		"\n┃\t\t\t\t\t\t\t\t\t\t  ┃" +
@@ -55,63 +61,93 @@ func main() {
 		"\n┃\ta corresponding path with the same name will be appended to the target\t  ┃" +
 		"\n┃\tport without the file extension\t\t\t\t\t\t  ┃" +
 		"\n┗" + horz_bot + "┛")
-		return
+
+		flag.PrintDefaults()
 	}
-	
+
+func Load_Page(filename, target string) {
+
+	http.HandleFunc(target, func(writer http.ResponseWriter, requestor *http.Request) {
+		content, read_err := os.ReadFile(filename)
+
+		if read_err != nil {
+			http.Error(writer, "Could not read file: ", http.StatusInternalServerError); return }
+
+		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+		writer.Write(content)
+	})
+}
+
+var static_ext_list = []string{
+	".js", ".css", ".php", ".jpg", ".jpeg", ".png",
+	".gif", ".ico", ".svg", ".json", ".xml", ".txt",
+}
+
+func is_static(filename string) bool {
+	name := str.ToLower(filename)
+
+	for _, ext := range static_ext_list {
+		if str.HasSuffix(name, ext) { return true }
+	}
+	return false
+}
+
+func main() {
+
+	flag.Usage = usage
 	flag.Parse()
 
-	if len(os.Args) < 2 { fmt.Println("No port was provided..."); return; }
+	if len(os.Args) < 2 { fmt.Println("No port was provided..."); return }
 
-	homepage := ""
+	var homepage string
 	if len(os.Args) < 3 { homepage = "index.html"
 	} else { homepage = os.Args[2] }
 
 	http.HandleFunc("/", func(writer http.ResponseWriter, requestor *http.Request) {
 		homepage_content, hread_err := os.ReadFile(homepage)
-		if hread_err != nil { log.Println("Homepage content could not be read..."); return; }
+		if hread_err != nil { log.Println("Homepage content could not be read..."); return }
 
 		if requestor.URL.Path != "/" {
+			_404_page, _ := os.ReadFile("page_not_found.html")
 			writer.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(writer, "404 Not Found")
+			fmt.Fprintf(writer, string(_404_page))
 			return
 		}
+
 		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 		writer.Write(homepage_content)
 	})
-	
+
 	page_list := os.Args[2:]
+
+	page_names := []string{}
+	file_list, read_err := os.ReadDir(".")
+	if read_err != nil { panic("Error occured reading dir files") }
+
+	for _, file := range file_list { page_names = append(page_names, file.Name()) }
 	
 	if len(page_list) > 0 {
 		for _, name := range page_list {
-			if !str.Contains(name, "html") { continue }
-			
-			basename := str.TrimSuffix(name, ".html")
-			Load_Page(name, "/" + basename)
+			if !str.Contains(name, "html") || !str.Contains(name, ".js") { continue }
+
+			if str.Contains(name, "html") {
+				basename := str.TrimSuffix(name, ".html")
+				Load_Page(name, "/" + basename)
+			}
 		}
-		
+
 	} else {
-		page_names := []string{}
-
-		files, read_err := os.ReadDir(".")
-		if read_err != nil { panic(read_err) }
-
-		for _, file := range files {
-			page_names = append(page_names, file.Name())
-		}
-		
-		if !hu.StrSliceContains(page_names[:], "index", "fuzzy") {
-			log.Println("index.html was not found, exiting...")
-			return
-		}
+		if !hu.StrSliceContains(page_names[:], "index") {
+			log.Println("index.html was not found, exiting..."); return }
 		
 		pages := []string{}
 		for _, name := range page_names {
-			if !str.Contains(name, "html") { continue }
+			if !str.Contains(name, "html") || !str.Contains(name, ".js") { continue }
+			if str.Contains(name, "page_not_found") { continue }
+
 			pages = append(pages, name)
-		
-			basename := str.TrimSuffix(name, ".html")
-			Load_Page(name, "/" + basename)
 		}
+
 		hu.Print_List("The following pages have been activated:", pages)
 	}
 

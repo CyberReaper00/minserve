@@ -24,6 +24,7 @@ func Print_List(msg string, list []string) {
 
 	var list_len int
 	for _, item := range list { list_len += len(item)+3 }
+
 	fmt.Printf("\t┏%s┓\n", strings.Repeat("━", list_len-1)); fmt.Print("\t┃ ")
 	for _, item := range list { fmt.Print(item + " ┃ ") }
 	Print(); fmt.Printf("\t┗%s┛\n", strings.Repeat("━", list_len-1))
@@ -37,7 +38,7 @@ func GetType(value any) string {
 		case bool:	  return "bool"
 		case float32: return "float32"
 		case float64: return "float64"
-		default: return "string"
+		default:	  return "string"
 	}
 }
 
@@ -122,13 +123,13 @@ func InputMenu(lc_msgs []int, msgs ...string) []any {
 		user_input := Input("│ %s", msg)
 
 		// Output handling
-		if IntSliceContains(lc_msgs, i + 1, "exact") || IntSliceContains(lc_msgs, -1, "exact") &&
+		if IntSliceContains(lc_msgs, i + 1) || IntSliceContains(lc_msgs, -1) &&
 			reflect.TypeOf(user_input).Kind() == reflect.String {
 
 			str_inp := user_input.(string)
 			final_slice[i] = strings.ToLower(str_inp)
 
-		} else if IntSliceContains(lc_msgs, 0, "exact") { final_slice[i] = user_input }
+		} else if IntSliceContains(lc_msgs, 0) { final_slice[i] = user_input }
 	}
 
 	fmt.Println(bot)
@@ -250,37 +251,20 @@ func Int_Contains(num int) {
 	}
 }
 
-func IntSliceContains(slice []int, target int, method string) bool {
-	if method == "exact" {
-		for _, num := range slice {
-			if num == target { return true }
-		}
+func IntSliceContains(slice []int, target int) bool {
+	// TODO: replace with Int_Contains
+	for _, num := range slice {
+		str := strconv.Itoa(num)
+		target_str := strconv.Itoa(target)
 
-	} else if method == "fuzzy" {
-		// TODO: add Int_Contains
-		for _, num := range slice {
-			str := strconv.Itoa(num)
-			target_str := strconv.Itoa(target)
-
-			if strings.Contains(str, target_str) { return true }
-		}
-	} else { panic("Invalid method was provided in IntSliceContains") }
-
-    return false
+		if strings.Contains(str, target_str) { return true }
+	}
+	return false
 }
 
-func StrSliceContains(slice []string, target string, method string) bool {
-	if method == "exact" {
-		for _, str := range slice {
-			if str == target { return true }
-		}
-
-	} else if method == "fuzzy" {
-		for _, str := range slice {
-			if strings.Contains(str, target) { return true }
-		}
-
-	} else { panic("Invalid method was provided in StrSliceContains") }
-
-    return false
+func StrSliceContains(slice []string, target string) bool {
+	for _, str := range slice {
+		if strings.Contains(str, target) { return true }
+	}
+	return false
 }

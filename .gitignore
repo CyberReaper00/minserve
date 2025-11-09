@@ -1,4 +1,3 @@
-temp
-test.go
-new
-other
+*
+!README.md
+!server.go
