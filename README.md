@@ -20,7 +20,6 @@ MinServe is built to be as simple and efficient as possible, due to this simplic
 ```
 mkdir minserve_proj && cd minserve_proj
 go mod init
-go get https://github.com/CyberReaper00/helper_utils/humain@latest // this is the main dependency
 go mod tidy
 ```
 
