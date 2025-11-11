@@ -24,161 +24,64 @@ package main
 
 import (
 	"os"
-	"fmt"
 	"log"
-	"time"
-	"flag"
-ctx	"context"
-sc	"syscall"
-scv	"strconv"
-str	"strings"
+	"path"
+	"strings"
 	"net/http"
-	"os/signal"
-
-hu	"local/main/humain"
 )
 
-var horz_top = str.Repeat("━", 47)
-var horz_mid = str.Repeat("━", 70)
-var horz_bot = str.Repeat("━", 81)
+// TODO: figure out a way to get rid of dir in the parameters for Dynamic_Server
+// so the user only has to enter one thing and all other functionality can be infered
+// from that
+func Dynamic_Server(root string, not_found_contents []byte) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 
-func usage() {
-		fmt.Println("" +
-		"┏━━━━━ usage: <port> [<filenames>] " + horz_top + "┓" +
-		"\n┃\t\t\t\t\t\t\t\t\t\t  ┃" +
-		"\n┣━\033[1;7m COMMANDS \033[0m" + horz_mid + "┫" +
-		"\n┃  port\t\t\t\t\t\t\t\t\t\t  ┃" +
-		"\n┃\tthe port of the target\t\t\t\t\t\t\t  ┃" +
-		"\n┃  filenames\t\t\t\t\t\t\t\t\t  ┃" +
-		"\n┃\tif no name(s)/path(s) are given for files to be loaded then MinServe\t  ┃" +
-		"\n┃\twill look for 'index.html' in the current directory for the homepage,\t  ┃" +
-		"\n┃\tif not found, MinServe will give an error - if found then all html files  ┃" +
-		"\n┃\tpresent in the current directory will be parsed and a corresponding path  ┃" +
-		"\n┃\twith the same name will be appended to the target port without the file\t  ┃" +
-		"\n┃\textension\t\t\t\t\t\t\t\t  ┃" +
-		"\n┃\t\t\t\t\t\t\t\t\t\t  ┃" +
-		"\n┃\tif any name(s)/path(s) are given then only those will be parsed and\t  ┃" +
-		"\n┃\ta corresponding path with the same name will be appended to the target\t  ┃" +
-		"\n┃\tport without the file extension\t\t\t\t\t\t  ┃" +
-		"\n┗" + horz_bot + "┛")
+		// TODO: create a loop that gets all the files from the current directory and then
+		// checks request path to see if path matches any filenames in the directory list which
+		// will allow the user to create and remove files and directories without restarting
+		// the server - this will cause each request to be slower since the directory is being
+		// scanned on each request
+		// or
+		// remove the root parameter and only keep the dir parameter so the directory is only
+		// scanned once and never again - this will make each request much faster but will cause
+		// an annoyance of having to restart the server everytime some changes are made to the
+		// directory
+		var file_path string
+		if req.URL.Path == "/" { file_path = "index"
+		} else { file_path = path.Join(root, path.Clean(req.URL.Path)) }
 
-		flag.PrintDefaults()
-	}
+		// TODO: add function to only serve html files without the extension and every other
+		// file should be served as is
+		contents, file_err := os.ReadFile(file_path + ".html")
 
-func Load_Page(filename, target string) {
-
-	http.HandleFunc(target, func(writer http.ResponseWriter, requestor *http.Request) {
-		content, read_err := os.ReadFile(filename)
-
-		if read_err != nil {
-			http.Error(writer, "Could not read file: ", http.StatusInternalServerError); return }
-
-		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
-		writer.Write(content)
-	})
-}
-
-var static_ext_list = []string{
-	".js", ".css", ".php", ".jpg", ".jpeg", ".png",
-	".gif", ".ico", ".svg", ".json", ".xml", ".txt",
-}
-
-func is_static(filename string) bool {
-	name := str.ToLower(filename)
-
-	for _, ext := range static_ext_list {
-		if str.HasSuffix(name, ext) { return true }
-	}
-	return false
-}
-
-func main() {
-
-	flag.Usage = usage
-	flag.Parse()
-
-	if len(os.Args) < 2 { fmt.Println("No port was provided..."); return }
-
-	var homepage string
-	if len(os.Args) < 3 { homepage = "index.html"
-	} else { homepage = os.Args[2] }
-
-	http.HandleFunc("/", func(writer http.ResponseWriter, requestor *http.Request) {
-		homepage_content, hread_err := os.ReadFile(homepage)
-		if hread_err != nil { log.Println("Homepage content could not be read..."); return }
-
-		if requestor.URL.Path != "/" {
-			_404_page, _ := os.ReadFile("page_not_found.html")
+		if file_err != nil || strings.HasPrefix(string(req.URL.Path), "/.") {
+			// TODO: replace this manual implementation with either http.NotFound or
+			// http.NotFoundHandler to make it more efficient
 			writer.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(writer, string(_404_page))
+			writer.Write(not_found_contents)
 			return
 		}
 
-		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
-		writer.Write(homepage_content)
+		log.Printf("File served: %s\n", file_path)
+
+		writer.Header().Set("Content-Type", http.DetectContentType(contents))
+		writer.Write(contents)
 	})
+}
 
-	page_list := os.Args[2:]
+func main() {
+	if len(os.Args) < 2 { log.Fatalln("No port was provided, exiting...") }
+	port := os.Args[1]
 
-	page_names := []string{}
-	file_list, read_err := os.ReadDir(".")
-	if read_err != nil { panic("Error occured reading dir files") }
+	// TODO: create an implementation that allows the user to define the name of the homepage
+	// file instead of using index.html and keep index.html as the default homepage file in case no
+	// name is provided
+	_, main_err := os.ReadFile("index.html")
+	if main_err != nil { log.Fatalln("index.html was not found, exiting...") }
 
-	for _, file := range file_list { page_names = append(page_names, file.Name()) }
-	
-	if len(page_list) > 0 {
-		for _, name := range page_list {
-			if !str.Contains(name, "html") || !str.Contains(name, ".js") { continue }
+	content, _ := os.ReadFile("page_not_found")
+	http.Handle("/", Dynamic_Server(".", content))
 
-			if str.Contains(name, "html") {
-				basename := str.TrimSuffix(name, ".html")
-				Load_Page(name, "/" + basename)
-			}
-		}
-
-	} else {
-		if !hu.StrSliceContains(page_names[:], "index") {
-			log.Println("index.html was not found, exiting..."); return }
-		
-		pages := []string{}
-		for _, name := range page_names {
-			if !str.Contains(name, "html") || !str.Contains(name, ".js") { continue }
-			if str.Contains(name, "page_not_found") { continue }
-
-			pages = append(pages, name)
-		}
-
-		hu.Print_List("The following pages have been activated:", pages)
-	}
-
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, sc.SIGTERM)
-
-	port, arg_err := scv.Atoi(os.Args[1])
-	if arg_err != nil { log.Println("Unknown value entered, port must be int..."); return; }
-
-	server := &http.Server{Addr: fmt.Sprintf(":%d", port)}
-
-	go func() {
-		if len(page_list) > 0 {
-			hu.Print_List("The following pages have been activated:", page_list)
-		}
-		fmt.Printf("Server running on: http://localhost:%d\n\n", port)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Could not listen on port(%v): %v\n", port, err)
-		}
-	}()
-
-	<-stop
-
-	log.Println("Shutting down server...\n")
-
-	ctx, cancel := ctx.WithTimeout(ctx.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalln("Shutdown forced...\n")
-	}
-
-	log.Println("Shutdown complete")
+	log.Println("Server started at port: " + port)
+	http.ListenAndServe(":" + port, nil)
 }

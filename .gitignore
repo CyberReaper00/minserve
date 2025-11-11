@@ -1,6 +1,7 @@
-*
+/*
+!.gitignore
 !server.go
 !README.md
 !LICENCE
-!dm_serif/
 !page_not_found
+!dm_serif/
