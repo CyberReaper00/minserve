@@ -1,0 +1,55 @@
+<html>
+	
+	<style>
+		@font-face {
+			font-family: 'dm-serif';
+			src: url('dm_serif/DMSerifText-Regular.ttf') format('truetype');
+			font-weight: 400;
+			font-style: normal;
+			font-display: swap;
+		}
+
+		@font-face {
+			font-family: 'dm-serif';
+			src: url('dm_serif/DMSerifText-Italic.ttf') format('truetype');
+			font-weight: 400;
+			font-style: italic;
+			font-display: swap;
+		}
+
+		h1 {
+			font-family: 'dm-serif', sans-serif;
+			font-size: 3rem;
+		}
+
+		h2 {
+			font-family: 'dm-serif', sans-serif;
+			font-style: italic;
+			font-size: 2.4rem;
+		}
+
+		body {
+			display: flex;
+			align-items: center;
+			justify-content:center;
+
+			color: whitesmoke;
+			background: #222;
+		}
+
+		.content {
+			display: flex;
+			align-items: center;
+			flex-direction: column;
+
+			line-height: 0;
+		}
+	</style>
+	
+	<body>
+		<div class='content'>
+			<h2>404</h2>
+			<h1>Page Not Found</h1>
+		</div>
+	</body>
+</html>
