@@ -59,17 +59,17 @@ It can be used in the following manner,
 Currently minserve hosts all files in the current directory and all subdirectories, it does not allow for any exclusions
 Any file in the current directory is displayed as such,
 ```
-localhost:1234/file1.html
-localhost:1234/file2.html
+localhost:1234/file1
+localhost:1234/file2
 ```
 
 Any file in any subdirecory is displayed as such,
 ```
-localhost:1234/folder1/file1.html
-localhost:1234/folder1/file2.html
+localhost:1234/folder1/file1
+localhost:1234/folder1/file2
 
-localhost:1234/folder2/file1.html
-localhost:1234/folder2/file2.html
+localhost:1234/folder2/file1
+localhost:1234/folder2/file2
 ```
 
 # Features
