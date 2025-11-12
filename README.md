@@ -10,6 +10,8 @@ MinServe is a simple but powerful web server that can be used for the hosting of
 ## Getting Started
 If you wish to try minserve then you can just do the following to build it on your system or go to the [releases page](https://github.com/CyberReaper00/minserve/releases) to download a binary
 
+All release binaries are statically built because that is the correct way to build software, if you want the binaries to be dynamic then you can build them yourself with the following guide
+
 MinServe is built to be as simple and efficient as possible, due to this simplicity it does not require any `build.sh`, `build.bat`, `run.sh` or anything alike
 
 **Prerequisites**
@@ -77,5 +79,6 @@ localhost:1234/folder2/file2
 - If an `index.html` file is not found then it will give an error and exit
 - It includes an implementation for a custom 404 page which can be updated and customized at will and an example file has been provided
 `page_not_found`
+- It looks for the word `index` in the directory for the homepage, if you have any other files named index like `index.js` then minserve will get confused and the webpage will not be able to respond to the servers request
 
 Anything that is not mentioned is not provided or supported by minserve

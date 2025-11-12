@@ -27,13 +27,14 @@ import (
 	"log"
 	"path"
 	"strings"
+	_ "reflect"
 	"net/http"
 )
 
 // TODO: figure out a way to get rid of dir in the parameters for Dynamic_Server
 // so the user only has to enter one thing and all other functionality can be infered
 // from that
-func Dynamic_Server(root string, not_found_contents []byte) http.Handler {
+func Dynamic_Server(root string, files []os.DirEntry, not_found_contents []byte, port string) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 
 		// TODO: create a loop that gets all the files from the current directory and then
@@ -46,23 +47,39 @@ func Dynamic_Server(root string, not_found_contents []byte) http.Handler {
 		// scanned once and never again - this will make each request much faster but will cause
 		// an annoyance of having to restart the server everytime some changes are made to the
 		// directory
-		var file_path string
+		var file_path	string
+		var contents	[]byte
+		var file_err	error
+
 		if req.URL.Path == "/" { file_path = "index"
 		} else { file_path = path.Join(root, path.Clean(req.URL.Path)) }
 
 		// TODO: add function to only serve html files without the extension and every other
 		// file should be served as is
-		contents, file_err := os.ReadFile(file_path + ".html")
+		basename := strings.TrimPrefix(file_path, "/")
+		for _, file := range files {
+			if !strings.Contains(file.Name(), basename) { continue }
 
-		if file_err != nil || strings.HasPrefix(string(req.URL.Path), "/.") {
+			_, after, _ := strings.Cut(file.Name(), ".")
+			if after == "" { continue }
+
+			switch after {
+				case "html": contents, file_err = os.ReadFile(file_path + ".html")
+				default:
+					contents, file_err = os.ReadFile(file_path)
+			}
+		}
+
+		if file_err != nil {
 			// TODO: replace this manual implementation with either http.NotFound or
 			// http.NotFoundHandler to make it more efficient
+			log.Printf("Request could not be intercepted for: localhost:%s%v\n", port, req.URL.Path)
 			writer.WriteHeader(http.StatusNotFound)
 			writer.Write(not_found_contents)
 			return
 		}
 
-		log.Printf("File served: %s\n", file_path)
+		log.Printf("Request intercepted for: localhost:%s%v\n", port, req.URL.Path)
 
 		writer.Header().Set("Content-Type", http.DetectContentType(contents))
 		writer.Write(contents)
@@ -79,8 +96,11 @@ func main() {
 	_, main_err := os.ReadFile("index.html")
 	if main_err != nil { log.Fatalln("index.html was not found, exiting...") }
 
+	files, _ := os.ReadDir(".")
 	content, _ := os.ReadFile("page_not_found")
-	http.Handle("/", Dynamic_Server(".", content))
+	dynamic_handler := Dynamic_Server(".", files, content, port)
+
+	http.Handle("/", dynamic_handler)
 
 	log.Println("Server started at port: " + port)
 	http.ListenAndServe(":" + port, nil)
