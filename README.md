@@ -1,6 +1,7 @@
 # MinServe
 > [!warning]
 > MinServe is created for the purpose of testing and fast development, it is not meant to be used for production or secure environments but for testing, prototyping and hobby projects
+>
 > It must also be known that MinServe is heavily under construction, is not complete in any way and will include a lot of problems
 >
 > Any work being done in those settings should use something like NGINX or Apache Server
@@ -29,14 +30,14 @@ go mod tidy
 - Once everything has been set up, run the following command for your OS
 
 ### Linux
-**Dynamic linking:**
-```bash
-go build -o minserve .
-```
-
 **Static linking:**
 ```bash
 CGO_ENABLED=0
+go build -o minserve .
+```
+
+**Dynamic linking:**
+```bash
 go build -o minserve .
 ```
 
@@ -47,13 +48,15 @@ go build -o minserve .
 ```
 
 ## Usage
-MinServe takes in the port to host at
+MinServe takes one argument, the port to host at
+Then it launches all files in the current directory to the provided port at the provided host
+
 `minserve 1234`
 
 It can be used in the following manner,
 - Launch minserve with port
 - Go to the browser and open a page
-- Change the content on that page, locally
+- Change the content of that page, locally
 - Save the file and reload the page in the browser
 - The changes will take affect on reload
 
@@ -73,12 +76,19 @@ localhost:1234/folder2/file1
 localhost:1234/folder2/file2
 ```
 
+If any directory name is entered then minserve will treat it as a page and display the 404 page, since an html file does not exist with that name
+
 # Features
 - The main reason for MinServe to exist is to provide basic hot-reloading functionality that the default Go server does not provide
     - More functionality will be added with time as seen fit
+
+- It accepts a port and loads all files (even in subdirectories) to be served to the host site
 - If an `index.html` file is not found then it will give an error and exit
-- It includes an implementation for a custom 404 page which can be updated and customized at will and an example file has been provided
-`page_not_found`
-- It looks for the word `index` in the directory for the homepage, if you have any other files named index like `index.js` then minserve will get confused and the webpage will not be able to respond to the servers request
+- It includes an implementation for a custom 404 page `page_not_found` which can be updated and customized at will
+
+# Bugs
+- Currently if multiple files have the same name minserve will not be able to recognize which one does what, so it is advised to name things uniquely, for example
+    - other.html, other.css, other.js   | this will not work
+    - other.html, other1.css, other2.js | this will work
 
 Anything that is not mentioned is not provided or supported by minserve

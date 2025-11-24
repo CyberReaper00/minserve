@@ -25,28 +25,23 @@ package main
 import (
 	"os"
 	"log"
+	"fmt"
 	"path"
+	_ "time"
 	"strings"
 	_ "reflect"
 	"net/http"
+
+	_ "local/main/humain"
 )
 
-// TODO: figure out a way to get rid of dir in the parameters for Dynamic_Server
-// so the user only has to enter one thing and all other functionality can be infered
-// from that
-func Dynamic_Server(root string, files []os.DirEntry, not_found_contents []byte, port string) http.Handler {
+func Reload_Server(root string, files []string, not_found_contents []byte, port string) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 
-		// TODO: create a loop that gets all the files from the current directory and then
-		// checks request path to see if path matches any filenames in the directory list which
-		// will allow the user to create and remove files and directories without restarting
-		// the server - this will cause each request to be slower since the directory is being
-		// scanned on each request
-		// or
-		// remove the root parameter and only keep the dir parameter so the directory is only
-		// scanned once and never again - this will make each request much faster but will cause
-		// an annoyance of having to restart the server everytime some changes are made to the
-		// directory
+		// TODO
+		// create a goroutine that allows the server to walk through the current
+		// directory and updated the list of files to search through when the user
+		// presses ctrl-r
 		var file_path	string
 		var contents	[]byte
 		var file_err	error
@@ -54,54 +49,73 @@ func Dynamic_Server(root string, files []os.DirEntry, not_found_contents []byte,
 		if req.URL.Path == "/" { file_path = "index"
 		} else { file_path = path.Join(root, path.Clean(req.URL.Path)) }
 
-		// TODO: add function to only serve html files without the extension and every other
-		// file should be served as is
 		basename := strings.TrimPrefix(file_path, "/")
-		for _, file := range files {
-			if !strings.Contains(file.Name(), basename) { continue }
+		for _, item := range files {
+			if !strings.Contains(item, basename) { continue }
 
-			_, after, _ := strings.Cut(file.Name(), ".")
+			_, after, _ := strings.Cut(item, ".")
 			if after == "" { continue }
 
 			switch after {
-				case "html": contents, file_err = os.ReadFile(file_path + ".html")
+				case "html":
+					contents, file_err = os.ReadFile(file_path + ".html")
 				default:
 					contents, file_err = os.ReadFile(file_path)
 			}
 		}
 
 		if file_err != nil {
-			// TODO: replace this manual implementation with either http.NotFound or
-			// http.NotFoundHandler to make it more efficient
-			log.Printf("Request could not be intercepted for: localhost:%s%v\n", port, req.URL.Path)
+			fmt.Printf("%s was not found for: %s\n", file_path, req.URL.Path)
 			writer.WriteHeader(http.StatusNotFound)
 			writer.Write(not_found_contents)
 			return
 		}
 
-		log.Printf("Request intercepted for: localhost:%s%v\n", port, req.URL.Path)
+		fmt.Printf("%s was found for: %s\n", file_path, req.URL.Path)
 
 		writer.Header().Set("Content-Type", http.DetectContentType(contents))
 		writer.Write(contents)
 	})
 }
 
+func Read_All_Dirs(list []os.DirEntry, files []string, dir string) []string {
+	for _, item := range list {
+		
+		if strings.HasPrefix(item.Name(), ".") { continue }
+
+		if item.IsDir() {
+			list, _ = os.ReadDir(item.Name())
+			files = Read_All_Dirs(list, files, item.Name())
+
+		} else {
+			if dir == "" { files = append(files, item.Name())
+			} else { files = append(files, fmt.Sprintf("%s/%s", dir, item.Name())) }
+		}
+	}
+
+	return files
+}
+
 func main() {
 	if len(os.Args) < 2 { log.Fatalln("No port was provided, exiting...") }
 	port := os.Args[1]
 
-	// TODO: create an implementation that allows the user to define the name of the homepage
-	// file instead of using index.html and keep index.html as the default homepage file in case no
-	// name is provided
 	_, main_err := os.ReadFile("index.html")
 	if main_err != nil { log.Fatalln("index.html was not found, exiting...") }
 
-	files, _ := os.ReadDir(".")
-	content, _ := os.ReadFile("page_not_found")
-	dynamic_handler := Dynamic_Server(".", files, content, port)
+	var files []string
+	root_files, dir_err := os.ReadDir(".")
+	if dir_err != nil { log.Fatalln("ERROR: ", dir_err) }
 
-	http.Handle("/", dynamic_handler)
+	all_files := Read_All_Dirs(root_files, files, "")
+
+	content, _ := os.ReadFile("page_not_found")
+	reload_handler := Reload_Server(".", all_files, content, port)
+
+	http.Handle("/", reload_handler)
 
 	log.Println("Server started at port: " + port)
+	// TODO: create an implementation that allows the user to host their site on a
+	// registered domain
 	http.ListenAndServe(":" + port, nil)
 }
