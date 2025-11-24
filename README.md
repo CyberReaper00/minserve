@@ -49,6 +49,7 @@ go build -o minserve .
 
 ## Usage
 MinServe takes one argument, the port to host at
+
 Then it launches all files in the current directory to the provided port at the provided host
 
 `minserve 1234`
@@ -72,23 +73,27 @@ Any file in any subdirecory is displayed as such,
 localhost:1234/folder1/file1
 localhost:1234/folder1/file2
 
-localhost:1234/folder2/file1
-localhost:1234/folder2/file2
+localhost:1234/folder2/file3
+localhost:1234/folder2/file4
 ```
 
 If any directory name is entered then minserve will treat it as a page and display the 404 page, since an html file does not exist with that name
 
-# Features
+## Features
 - The main reason for MinServe to exist is to provide basic hot-reloading functionality that the default Go server does not provide
     - More functionality will be added with time as seen fit
 
 - It accepts a port and loads all files (even in subdirectories) to be served to the host site
 - If an `index.html` file is not found then it will give an error and exit
 - It includes an implementation for a custom 404 page `page_not_found` which can be updated and customized at will
+- It will not a page with the html extension
+    - example.com/new.html  | will display a 404 page
+    - example.com/new       | will display the page
 
-# Bugs
+## Bugs
 - Currently if multiple files have the same name minserve will not be able to recognize which one does what, so it is advised to name things uniquely, for example
     - other.html, other.css, other.js   | this will not work
     - other.html, other1.css, other2.js | this will work
+- If a path to a sub-file is given such as this `localhost:12323/new/new` and the `new.html` does not exist in the directory then minserve will still try to read it even though it doesnt exist, the 404 page functionality however works fine for all root level files and directories
 
 Anything that is not mentioned is not provided or supported by minserve

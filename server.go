@@ -97,7 +97,7 @@ func Read_All_Dirs(list []os.DirEntry, files []string, dir string) []string {
 }
 
 func main() {
-	if len(os.Args) < 2 { log.Fatalln("No port was provided, exiting...") }
+	if len(os.Args) < 2 { log.Fatalln("No port was provided...") }
 	port := os.Args[1]
 
 	_, main_err := os.ReadFile("index.html")
