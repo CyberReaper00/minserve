@@ -82,7 +82,6 @@ If any directory name is entered then minserve will treat it as a page and displ
 ## Features
 - The main reason for MinServe to exist is to provide basic hot-reloading functionality that the default Go server does not provide
     - More functionality will be added with time as seen fit
-
 - It accepts a port and loads all files (even in subdirectories) to be served to the host site
 - If an `index.html` file is not found then it will give an error and exit
 - It includes an implementation for a custom 404 page `page_not_found` which can be updated and customized at will
