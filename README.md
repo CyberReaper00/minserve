@@ -1,3 +1,6 @@
+> [!important]
+> this repo is no longer maintained and has been moved here: https://codeberg.org/CyberReaper00/minserve
+
 # MinServe
 > [!warning]
 > MinServe is created for the purpose of testing and fast development, it is not meant to be used for production or secure environments but for testing, prototyping and hobby projects
