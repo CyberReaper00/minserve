@@ -1,5 +1,5 @@
 > [!important]
-> this repo is no longer maintained and has been moved here: https://codeberg.org/CyberReaper00/minserve
+> i dont use github anymore, i moved here: https://codeberg.org/CyberReaper00
 
 # MinServe
 > [!warning]
